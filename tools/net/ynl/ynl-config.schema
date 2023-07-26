@@ -1,0 +1,72 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "description": "YNL specs configuration file",
+    "type": "object",
+
+    "properties": {
+        "yaml-specs-path": {
+            "description": "Path to Yaml specs",
+            "type": "string"
+        },
+        "spec-args": {
+            "description": "Individual spec args",
+            "type": "object",
+            "patternProperties": {
+                "^.*(\\.yaml)$": {
+                    "description": "Specific yaml spec arguments",
+                    "type": "object",
+                    "properties": {
+                        "schema": {
+                            "description": "The schema to use",
+                            "type": "string"
+                        },
+                        "no-schema": {
+                            "description": "No schema",
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "do": {
+                            "description": "The do function to use",
+                            "type": "string"
+                        },
+                        "dump": {
+                            "description": "The dump function to use",
+                            "type": "string"
+                        },
+                        "subscribe": {
+                            "description": "The multicast group to subscribe to",
+                            "type": "string"
+                        },
+                        "sleep": {
+                            "description": "The number to seconds to sleep",
+                            "type": "number",
+                            "default": 0
+                        },
+                        "json-params": {
+                            "description": "The json params to use for different functions",
+                            "type": "object",
+                            "patternProperties": {
+                                "^.*$": {
+                                  "type": ["string", "number", "object"],
+                                  "patternProperties": {
+                                        "^.*$": {
+                                        "type": ["string", "number"]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "yaml-specs-path"
+    ]
+}

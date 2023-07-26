@@ -9,6 +9,12 @@ import os
 
 from lib import YnlFamily
 
+try:
+    import jsonschema
+except ModuleNotFoundError as e:
+    print('Error: {}. Try `pip install jsonschema`'.format(e))
+    raise SystemExit(1)
+
 class ynlConfig():
     def __init__(self):
         self.no_schema = True
@@ -66,13 +72,36 @@ def main():
     if args.config:
         directory = ""
         yamls = {}
+        configSchema = os.path.dirname(__file__) + "/ynl-config.schema"
 
-        if not os.path.exists(args.config):
-             print("Error: ", args.config, " doesn't exist")
-             exit(-1)
+        # Load ynl-config json schema
+        try:
+            with open(configSchema, 'r') as f:
+                s = json.load(f)
+        except FileNotFoundError as e:
+            print('Error:', e)
+            raise SystemExit(1)
+        except json.decoder.JSONDecodeError as e:
+            print('Error: {}:'.format(args.schema), e)
+            raise SystemExit(1)
 
-        f = open(args.config)
-        data = json.load(f)
+        # Load config file
+        try:
+            with open(args.config, 'r') as f:
+                data = json.load(f)
+        except FileNotFoundError as e:
+            print('Error:', e)
+            raise SystemExit(1)
+        except json.decoder.JSONDecodeError as e:
+            print('Error: {}:'.format(args.schema), e)
+            raise SystemExit(1)
+
+        # Validate json config against the ynl-config schema
+        try:
+            jsonschema.validate(instance=data, schema=s)
+        except jsonschema.exceptions.ValidationError as e:
+            print('Error:', e)
+            raise SystemExit(1)
 
         for k in data:
             if k == 'yaml-specs-path':
