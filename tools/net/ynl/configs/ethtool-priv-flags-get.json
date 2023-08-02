@@ -1,0 +1,13 @@
+{
+    "yaml-specs-path": "/root/maryam/linux/Documentation/netlink/specs",
+    "spec-args": {
+      "ethtool.yaml": {
+        "do": "privflags-get",
+        "json-params": {
+            "header": {
+                "dev-name": "eno1"
+                }
+            }
+        }
+    }
+}

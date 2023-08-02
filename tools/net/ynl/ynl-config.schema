@@ -63,10 +63,43 @@
                 }
             },
             "additionalProperties": false
+        },
+        "multicast-groups": {
+            "description": "Array of Netlink multicast groups to monitor in agent mode",
+            "type": "object",
+            "patternProperties": {
+                "^.*(\\.yaml)$": {
+                    "description": "Yaml file to use for Netlink Family",
+                    "type": "object",
+                    "properties": {
+                        "subscribe": {
+                            "type": "array",
+                            "items": {
+                                "type": [ "string" ],
+                                "minLength": 1
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
         }
     },
     "additionalProperties": false,
     "required": [
         "yaml-specs-path"
+    ],
+    "oneOf": [
+        {
+            "required": [
+                "spec-args"
+            ]
+        },
+        {
+            "required": [
+                "multicast-groups"
+            ]
+        }
     ]
 }

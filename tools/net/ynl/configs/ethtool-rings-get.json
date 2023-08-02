@@ -1,0 +1,13 @@
+{
+    "yaml-specs-path": "<path>/Documentation/netlink/specs",
+    "spec-args": {
+      "ethtool.yaml": {
+        "do": "rings-get",
+        "json-params": {
+            "header": {
+                "dev-name": "eno1"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "yaml-specs-path": "<path>/Documentation/netlink/specs",
+    "spec-args": {
+        "ethtool.yaml": {
+            "subscribe": "monitor",
+            "sleep": 10
+        },
+        "netdev.yaml": {
+            "subscribe": "mgmt",
+            "sleep": 5
+        }
+    }
+}

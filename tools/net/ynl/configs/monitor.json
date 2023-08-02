@@ -1,0 +1,17 @@
+{
+    "yaml-specs-path": "<path>/Documentation/netlink/specs",
+    "multicast-groups": {
+      "ethtool.yaml": {
+        "subscribe":["monitor"]
+      },
+      "ovs_datapath.yaml": {
+          "subscribe": ["ovs_datapath"]
+      },
+      "ovs_flow.yaml": {
+          "subscribe": ["ovs_flow"]
+      },
+      "ovs_vport.yaml": {
+          "subscribe": ["ovs_vport"]
+      }
+    }
+}

@@ -6,6 +6,8 @@ import json
 import pprint
 import time
 import os
+import signal
+import time
 
 from lib import YnlFamily
 
@@ -18,6 +20,8 @@ except ModuleNotFoundError as e:
 class ynlConfig():
     def __init__(self):
         self.no_schema = True
+        self.multicast_groups = {}
+        self.yamls = {}
         self.schema = None
         self.spec = None
         self.json_text = None
@@ -27,6 +31,53 @@ class ynlConfig():
         self.dump = None
     def run(self):
         ynl_cfg(self.no_schema, self.spec, self.schema, self.json_text, self.ntf, self.sleep, self.do, self.dump)
+
+    def monitor(self):
+        ynl_mon(self.yamls, self.multicast_groups)
+
+def handler(signum, frame):
+    exit(1)
+    # res = input("\nDo you really want to exit? y/n ")
+    # if res == 'y':
+    #     exit(1)
+
+def ynl_mon(yamls, multicast_groups):
+    signal.signal(signal.SIGINT, handler)
+    ynls = []
+
+    for y in multicast_groups:
+        if y in yamls:
+            try:
+                ynl = YnlFamily(yamls[y])
+            except Exception as error:
+                print("'Error: Unable to monitor ", y, " ", error)
+                exit(1)
+
+            try:
+                ynl.ntf_subscribe(multicast_groups[y])
+            except Exception as error:
+                print ("Skipping invalid multicast group: ", multicast_groups[y], " ", error)
+                continue
+
+            ynls.append(ynl)
+
+    print("############### Subscribed to multicast groups ###############")
+    for y in ynls:
+        print(multicast_groups[y.yaml['name']+".yaml"])
+    print("###############################################################\n")
+
+
+    while True:
+        for ynl in ynls:
+            ynl.check_ntf()
+            if ynl.async_msg_queue:
+                print(ynl.yaml['name'], "multicast group: '", multicast_groups[ynl.yaml['name']+".yaml"], "'  messages: \n")
+                for msg in ynl.async_msg_queue:
+                    print(msg)
+                    ynl.async_msg_queue.remove(msg)
+            time.sleep(0.1)
+
+
 
 def ynl_cfg(no_schema, spec, schema, json_text, ntf, sleep, do, dump):
 
@@ -73,6 +124,7 @@ def main():
         directory = ""
         yamls = {}
         configSchema = os.path.dirname(__file__) + "/ynl-config.schema"
+        cfg = ynlConfig()
 
         # Load ynl-config json schema
         try:
@@ -106,19 +158,19 @@ def main():
         for k in data:
             if k == 'yaml-specs-path':
                 directory = data[k]
+                #TODO check if dir exists
 
                 # Scan the dir and get all the yaml files.
                 for filename in os.scandir(directory):
                     if filename.is_file():
                         if filename.name.endswith('.yaml'):
-                            yamls[filename.name] = filename.path
+                            cfg.yamls[filename.name] = filename.path
 
             elif k == 'spec-args':
                for v in data[k]:
                     print("############### ",v," ###############\n")
-                    cfg = ynlConfig()
                     # Check for yaml from the specs we found earlier
-                    if v in yamls:
+                    if v in  cfg.yamls:
                         # FOUND
                         cfg.spec = yamls[v]
                         if 'no-schema' in data[k][v]:
@@ -140,6 +192,12 @@ def main():
                         cfg.run()
                     else:
                         print("Error: ", v, " doesn't have a valid yaml file in ", directory, "\n")
+            elif k == 'multicast-groups':
+                for y in data[k]:
+                    for g in data[k][y]['subscribe']:
+                        cfg.multicast_groups[y] = g
+                cfg.monitor()
+
     else:
         ynl_cfg(args.no_schema, args.spec, args.schema, args.json_text, args.ntf, args.sleep, args.do, args.dump)
 
